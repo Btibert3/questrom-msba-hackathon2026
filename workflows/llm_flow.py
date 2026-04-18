@@ -8,10 +8,11 @@ load_dotenv()
 
 @task
 def call_modal_endpoint(prompt: str) -> str:
-    url = os.environ["MODAL_ENDPOINT_URL"]
-    response = httpx.post(url, json={"prompt": prompt}, timeout=120)
+    url = os.environ["MODAL_CHAT_URL"]
+    payload = {"messages": [{"role": "user", "content": prompt}]}
+    response = httpx.post(url, json=payload, timeout=120)
     response.raise_for_status()
-    text = response.json()["response"]
+    text = response.json()["choices"][0]["message"]["content"]
     print(f"Response: {text}")
     return text
 
