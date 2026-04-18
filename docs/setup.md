@@ -10,7 +10,7 @@ You need four accounts. All have free tiers sufficient for this demo.
 2. Run `uv run modal setup` — opens a browser for one-time auth (`modal` is already in the project dependencies)
 4. After deploying `modal/serve.py`, copy the printed `/chat` endpoint URL
 
-No API key needed in `.env` for the endpoint itself. The `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET` are only needed if you call Modal from inside Docker (e.g., to trigger deployments programmatically). For this demo, just run `modal deploy` locally.
+No Modal credentials are needed in `.env`. Authentication is handled by `modal setup` and stored locally by the Modal CLI.
 
 `.env` key:
 ```
