@@ -18,7 +18,7 @@ def call_modal_endpoint(prompt: str) -> str:
 
 
 @flow(name="llm-flow")
-def llm_flow(prompt: str = "In one sentence, what is a data pipeline?"):
+def llm_flow(prompt: str = "In one sentence, what makes a slider an effective strikeout pitch?"):
     call_modal_endpoint(prompt)
 
 

@@ -4,20 +4,21 @@ Each workflow is a self-contained Prefect flow in the `workflows/` directory.
 
 ---
 
-## pipeline_flow.py — Load Data to MotherDuck
+## pipeline_flow.py — Load MLB Pitch Data to MotherDuck
 
-**What it does:** Fetches the classic tips dataset (244 rows) from GitHub and loads it into a MotherDuck table called `tips`.
+**What it does:** Pulls pitch-by-pitch data for yesterday's MLB games from the MLB Stats API and loads a single `pitches` table into MotherDuck. No API key required.
 
 **Tasks:**
-1. `fetch_data` — reads a CSV via pandas from a public URL
-2. `load_to_motherduck` — connects to MotherDuck using your token, creates the `hackathon` database if it doesn't exist, and writes the table with `CREATE OR REPLACE`
+1. `get_game_ids` — calls `statsapi.schedule` to get all game IDs for yesterday's date
+2. `fetch_pitches` — for each game, walks every at-bat and pitch event; extracts pitcher, batter, pitch type, velocity, zone, count, runners on base, score, and at-bat result
+3. `load_to_motherduck` — creates the `hackathon` database if needed and writes the table with `CREATE OR REPLACE`
 
 **Run it:**
 ```bash
 python workflows/pipeline_flow.py
 ```
 
-**What to look for:** Prefect UI shows two green task runs. MotherDuck UI shows `hackathon.tips` with 244 rows.
+**What to look for:** Prefect UI shows three green task runs. MotherDuck UI shows `hackathon.pitches` with one row per pitch thrown yesterday. If there were no games (off-day), the flow logs a warning and exits cleanly.
 
 ---
 
@@ -37,17 +38,17 @@ python workflows/llm_flow.py
 
 **Change the prompt:** Edit the default in `llm_flow.py`:
 ```python
-def llm_flow(prompt: str = "In one sentence, what is a data pipeline?"):
+def llm_flow(prompt: str = "In one sentence, what makes a slider an effective strikeout pitch?"):
 ```
 
 ---
 
 ## langchain_flow.py — LangChain Chain + LangSmith Tracing
 
-**What it does:** Queries MotherDuck for a tipping data summary, feeds it to a LangChain chain backed by the Modal LLM, and asks for the most interesting insight. Every call is traced to LangSmith.
+**What it does:** Queries MotherDuck for a pitch summary (top pitchers by pitch count, average velocity, and strikes), feeds it to a LangChain chain backed by the Modal LLM, and asks for the most interesting insight. Every call is traced to LangSmith.
 
 **Tasks:**
-1. `fetch_tips_summary` — runs a GROUP BY query in MotherDuck, returns a formatted string
+1. `fetch_pitch_summary` — runs a GROUP BY query on `pitches` in MotherDuck, returns a formatted string
 2. `run_chain` — builds a `ChatPromptTemplate | ModalChatModel` chain and invokes it
 
 **`ModalChatModel`** is a minimal `BaseChatModel` subclass that wraps the Modal endpoint — no OpenAI key required.
