@@ -1,0 +1,11 @@
+prefect>=3
+duckdb
+openai
+langchain
+langchain-openai
+langsmith
+pandas
+httpx
+python-dotenv
+modal
+streamlit
