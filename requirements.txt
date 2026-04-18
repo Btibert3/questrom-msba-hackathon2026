@@ -8,3 +8,4 @@ httpx
 python-dotenv
 modal
 streamlit
+mlb-statsapi

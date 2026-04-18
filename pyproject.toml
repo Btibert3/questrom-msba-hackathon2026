@@ -13,4 +13,5 @@ dependencies = [
     "python-dotenv",
     "modal",
     "streamlit",
+    "mlb-statsapi",
 ]

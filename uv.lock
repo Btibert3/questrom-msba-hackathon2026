@@ -1475,6 +1475,18 @@ wheels = [
 ]
 
 [[package]]
+name = "mlb-statsapi"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6e/82/803f7679f4447eedece75ded1966b1584807ac6aa5acfeb5e4746438654f/mlb_statsapi-1.9.0.tar.gz", hash = "sha256:8d8b65080e80d1b14ac5eb7905106609b46a8571d69edb45228e408c35d8d022", size = 30567, upload-time = "2025-04-04T19:02:23.858Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fd/a7/0c56310db3b67b449a19a1872def21c62e15497557a5fab6e228b5da6e15/mlb_statsapi-1.9.0-py3-none-any.whl", hash = "sha256:1da5cad74588a8fdbb6d3a4928180b9b79a2edab649aba4395fa03301fa896ad", size = 31275, upload-time = "2025-04-04T19:02:22.588Z" },
+]
+
+[[package]]
 name = "modal"
 version = "1.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2526,6 +2538,7 @@ dependencies = [
     { name = "langchain" },
     { name = "langchain-openai" },
     { name = "langsmith" },
+    { name = "mlb-statsapi" },
     { name = "modal" },
     { name = "pandas" },
     { name = "prefect" },
@@ -2540,6 +2553,7 @@ requires-dist = [
     { name = "langchain" },
     { name = "langchain-openai" },
     { name = "langsmith" },
+    { name = "mlb-statsapi" },
     { name = "modal" },
     { name = "pandas" },
     { name = "prefect", specifier = ">=3" },

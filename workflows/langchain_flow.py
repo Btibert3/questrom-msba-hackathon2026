@@ -29,13 +29,19 @@ class ModalChatModel(BaseChatModel):
 
 
 @task
-def fetch_tips_summary() -> str:
+def fetch_pitch_summary() -> str:
     token = os.environ["MOTHERDUCK_TOKEN"]
     con = duckdb.connect(f"md:?motherduck_token={token}")
     con.execute("USE hackathon")
-    df = con.execute(
-        "SELECT smoker, day, time, ROUND(AVG(tip), 2) AS avg_tip FROM tips GROUP BY smoker, day, time ORDER BY avg_tip DESC LIMIT 6"
-    ).df()
+    df = con.execute("""
+        SELECT pitcher_name, pitch_type, COUNT(*) AS pitches,
+               ROUND(AVG(start_speed), 1) AS avg_speed,
+               SUM(CASE WHEN description LIKE '%Strike%' THEN 1 ELSE 0 END) AS strikes
+        FROM pitches
+        GROUP BY pitcher_name, pitch_type
+        ORDER BY pitches DESC
+        LIMIT 10
+    """).df()
     con.close()
     return df.to_string(index=False)
 
@@ -45,7 +51,7 @@ def run_chain(context: str) -> str:
     llm = ModalChatModel(endpoint_url=os.environ["MODAL_CHAT_URL"])
     prompt = ChatPromptTemplate.from_messages([
         ("system", "You are a data analyst."),
-        ("human", "Here is a summary of restaurant tipping data:\n\n{context}\n\nIn 2-3 sentences, what is the most interesting insight from this data?"),
+        ("human", "Here is a summary of yesterday's MLB pitch data:\n\n{context}\n\nIn 2-3 sentences, what is the most interesting insight from this data?"),
     ])
     chain = prompt | llm
     result = chain.invoke({"context": context})
@@ -55,7 +61,7 @@ def run_chain(context: str) -> str:
 
 @flow(name="langchain-flow")
 def langchain_flow():
-    context = fetch_tips_summary()
+    context = fetch_pitch_summary()
     run_chain(context)
 
 
