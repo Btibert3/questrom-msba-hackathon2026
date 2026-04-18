@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSBA Hackathon 2026 — Demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 60px 80px;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .slide.active { display: flex; }
+
+  /* slide variants */
+  .slide.title-slide { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); text-align: center; align-items: center; }
+  .slide.section-slide { background: #1e293b; border-left: 6px solid #3b82f6; }
+  .slide.content-slide { background: #1e293b; }
+  .slide.code-slide { background: #0f172a; }
+  .slide.highlight-slide { background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%); }
+
+  /* typography */
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #3b82f6;
+    margin-bottom: 16px;
+  }
+
+  h1 { font-size: 3.2rem; font-weight: 700; line-height: 1.15; color: #f8fafc; }
+  h2 { font-size: 2.2rem; font-weight: 700; line-height: 1.2; color: #f8fafc; margin-bottom: 8px; }
+  h3 { font-size: 1.4rem; font-weight: 600; color: #93c5fd; margin-bottom: 20px; }
+
+  .subtitle { font-size: 1.3rem; color: #94a3b8; margin-top: 16px; }
+  .meta { font-size: 1rem; color: #64748b; margin-top: 32px; }
+
+  p { font-size: 1.1rem; line-height: 1.7; color: #cbd5e1; margin-bottom: 12px; }
+
+  ul { list-style: none; padding: 0; }
+  ul li {
+    font-size: 1.05rem;
+    color: #cbd5e1;
+    padding: 10px 0 10px 28px;
+    border-bottom: 1px solid #334155;
+    position: relative;
+    line-height: 1.5;
+  }
+  ul li:last-child { border-bottom: none; }
+  ul li::before { content: "→"; position: absolute; left: 0; color: #3b82f6; font-weight: 700; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; margin-top: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; margin-top: 24px; }
+
+  .card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .card h4 { font-size: 1rem; font-weight: 600; color: #3b82f6; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .card p, .card li { font-size: 0.95rem; }
+  .card ul li { padding: 6px 0 6px 22px; }
+
+  pre {
+    background: #020617;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 24px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: #7dd3fc;
+    margin-top: 16px;
+  }
+  code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+  .comment { color: #475569; }
+  .keyword { color: #c084fc; }
+  .string { color: #86efac; }
+  .func { color: #fbbf24; }
+
+  .badge {
+    display: inline-block;
+    background: #1e3a5f;
+    color: #93c5fd;
+    border: 1px solid #3b82f6;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 4px 4px 4px 0;
+  }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .step-row { display: flex; align-items: flex-start; margin-bottom: 20px; }
+  .step-row p { margin: 0; padding-top: 4px; }
+
+  .big-number { font-size: 4rem; font-weight: 800; color: #3b82f6; line-height: 1; }
+  .big-label { font-size: 1rem; color: #64748b; margin-top: 4px; }
+
+  .stats-row { display: flex; gap: 48px; margin-top: 32px; }
+
+  .nav {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+    align-items: center;
+  }
+
+  .nav button {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+  }
+  .nav button:hover { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+  .slide-counter {
+    position: fixed;
+    bottom: 28px;
+    left: 32px;
+    font-size: 0.8rem;
+    color: #475569;
+  }
+
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+  }
+
+  .tag-row { margin-top: 24px; }
+
+  .url { color: #3b82f6; font-family: monospace; font-size: 0.95rem; }
+
+  .highlight-box {
+    background: #0f172a;
+    border-left: 4px solid #3b82f6;
+    border-radius: 0 8px 8px 0;
+    padding: 20px 24px;
+    margin-top: 20px;
+  }
+  .highlight-box p { margin: 0; font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1. Title -->
+  <div class="slide title-slide active">
+    <div class="eyebrow">Questrom MSBA · Hackathon 2026</div>
+    <h1>Building AI Pipelines<br>with Real Data</h1>
+    <p class="subtitle">Modal · MotherDuck · Prefect · LangChain · LangSmith</p>
+    <p class="meta">30-minute live demo</p>
+  </div>
+
+  <!-- 2. What we're building -->
+  <div class="slide content-slide">
+    <div class="eyebrow">Overview</div>
+    <h2>What We're Building</h2>
+    <h3>An end-to-end AI data pipeline — live MLB data → LLM insight</h3>
+    <div class="three-col">
+      <div class="card">
+        <h4>1. Ingest</h4>
+        <ul>
+          <li>Pull yesterday's MLB pitch data</li>
+          <li>Load to MotherDuck (cloud DuckDB)</li>
+          <li>Orchestrated with Prefect</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>2. Inference</h4>
+        <ul>
+          <li>LLM hosted on Modal (GPU serverless)</li>
+          <li>OpenAI-compatible API</li>
+          <li>Cold-start → warm in ~60s</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>3. Insight</h4>
+        <ul>
+          <li>LangChain chain over pitch summary</li>
+          <li>LangSmith traces every call</li>
+          <li>Streamlit chat UI</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. The stack -->
+  <div class="slide content-slide">
+    <div class="eyebrow">Tools</div>
+    <h2>The Stack</h2>
+    <div class="two-col">
+      <ul>
+        <li><strong>Modal</strong> — serverless GPU for LLM inference. Deploy once, pay per second.</li>
+        <li><strong>MotherDuck</strong> — cloud DuckDB. Query data from anywhere with a token.</li>
+        <li><strong>Prefect</strong> — workflow orchestration. Tasks, flows, retries, UI.</li>
+      </ul>
+      <ul>
+        <li><strong>LangChain</strong> — chain prompts and models. Swap backends without rewriting logic.</li>
+        <li><strong>LangSmith</strong> — trace every LLM call. See inputs, outputs, latency.</li>
+        <li><strong>Streamlit</strong> — instant chat UI. Multi-turn, no frontend experience required.</li>
+      </ul>
+    </div>
+    <div class="tag-row">
+      <span class="badge">Python</span>
+      <span class="badge">Docker</span>
+      <span class="badge">uv</span>
+      <span class="badge">mlb-statsapi</span>
+      <span class="badge">DuckDB</span>
+      <span class="badge">SmolLM2</span>
+    </div>
+  </div>
+
+  <!-- 4. Section: Pipeline -->
+  <div class="slide section-slide">
+    <div class="eyebrow">Step 1 of 3</div>
+    <h2>pipeline_flow.py</h2>
+    <h3>Pull yesterday's MLB pitches → MotherDuck</h3>
+    <div class="highlight-box">
+      <p>No API key needed. The MLB Stats API is free and public. We get every pitch thrown yesterday — pitch type, velocity, zone, count, runners on base, score, and at-bat result.</p>
+    </div>
+  </div>
+
+  <!-- 5. Pipeline tasks -->
+  <div class="slide content-slide">
+    <div class="eyebrow">pipeline_flow.py</div>
+    <h2>Three Tasks</h2>
+    <div style="margin-top: 24px;">
+      <div class="step-row">
+        <span class="step-num">1</span>
+        <p><strong>get_game_ids</strong> — calls <code>statsapi.schedule(date)</code> and returns a list of game IDs for yesterday</p>
+      </div>
+      <div class="step-row">
+        <span class="step-num">2</span>
+        <p><strong>fetch_pitches</strong> — for each game, walks every at-bat and pitch event; extracts 20+ fields per pitch into a flat DataFrame</p>
+      </div>
+      <div class="step-row">
+        <span class="step-num">3</span>
+        <p><strong>load_to_motherduck</strong> — connects to <code>md:?motherduck_token=…</code>, creates <code>hackathon.pitches</code> with <code>CREATE OR REPLACE TABLE</code></p>
+      </div>
+    </div>
+    <pre><code><span class="keyword">@flow</span>(name=<span class="string">"pipeline-flow"</span>)
+<span class="keyword">def</span> <span class="func">pipeline_flow</span>():
+    yesterday = (date.today() - timedelta(days=<span class="string">1</span>)).strftime(<span class="string">"%Y-%m-%d"</span>)
+    game_ids = get_game_ids(yesterday)
+    df = fetch_pitches(game_ids, yesterday)
+    load_to_motherduck(df)</code></pre>
+  </div>
+
+  <!-- 6. What's in the table -->
+  <div class="slide content-slide">
+    <div class="eyebrow">pipeline_flow.py · Output</div>
+    <h2>What's in the <code>pitches</code> Table</h2>
+    <div class="two-col" style="margin-top: 24px;">
+      <div class="card">
+        <h4>Game Context</h4>
+        <ul>
+          <li>game_pk, game_date</li>
+          <li>away_team, home_team</li>
+          <li>inning, half_inning</li>
+          <li>away_score, home_score</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Pitch Detail</h4>
+        <ul>
+          <li>pitcher_name, batter_name</li>
+          <li>pitch_type, pitch_description</li>
+          <li>start_speed, end_speed, zone</li>
+          <li>balls, strikes</li>
+          <li>on_1b, on_2b, on_3b</li>
+          <li>description, events (at-bat result)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Demo: run pipeline -->
+  <div class="slide highlight-slide">
+    <div class="eyebrow">Live Demo</div>
+    <h2>Run the Pipeline</h2>
+    <pre><code>uv run python workflows/pipeline_flow.py</code></pre>
+    <div class="highlight-box" style="margin-top: 24px;">
+      <p><strong>Watch for:</strong> Prefect UI at <span class="url">http://localhost:4201</span> — three green task runs.<br>
+      Then check MotherDuck UI — <code>hackathon.pitches</code> with one row per pitch.</p>
+    </div>
+  </div>
+
+  <!-- 8. Section: LLM -->
+  <div class="slide section-slide">
+    <div class="eyebrow">Step 2 of 3</div>
+    <h2>llm_flow.py</h2>
+    <h3>Serverless GPU inference on Modal</h3>
+    <div class="highlight-box">
+      <p>The model (SmolLM2) is deployed on Modal. First call cold-starts the GPU (~60s). Subsequent calls are fast. The API is OpenAI-compatible — any client works.</p>
+    </div>
+  </div>
+
+  <!-- 9. llm_flow code -->
+  <div class="slide code-slide">
+    <div class="eyebrow">llm_flow.py</div>
+    <h2>One Task, One HTTP Call</h2>
+    <pre><code><span class="keyword">@task</span>
+<span class="keyword">def</span> <span class="func">call_modal_endpoint</span>(prompt: str) -> str:
+    url = os.environ[<span class="string">"MODAL_CHAT_URL"</span>]
+    payload = {<span class="string">"messages"</span>: [{<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: prompt}]}
+    response = httpx.post(url, json=payload, timeout=<span class="string">120</span>)
+    text = response.json()[<span class="string">"choices"</span>][<span class="string">0</span>][<span class="string">"message"</span>][<span class="string">"content"</span>]
+    <span class="keyword">print</span>(text)
+    <span class="keyword">return</span> text
+
+<span class="keyword">@flow</span>(name=<span class="string">"llm-flow"</span>)
+<span class="keyword">def</span> <span class="func">llm_flow</span>(prompt: str = <span class="string">"In one sentence, what makes a slider an effective strikeout pitch?"</span>):
+    call_modal_endpoint(prompt)</code></pre>
+    <p style="margin-top: 20px; color: #64748b;">Any Prefect flow can call this — it's just a POST to an HTTPS endpoint.</p>
+  </div>
+
+  <!-- 10. Demo: run llm_flow -->
+  <div class="slide highlight-slide">
+    <div class="eyebrow">Live Demo</div>
+    <h2>Run the LLM Flow</h2>
+    <pre><code>uv run python workflows/llm_flow.py</code></pre>
+    <div class="highlight-box" style="margin-top: 24px;">
+      <p><strong>Watch for:</strong> Response printed to terminal. First call may take 60–90 seconds (GPU cold start). Check Prefect UI for the task run.</p>
+    </div>
+  </div>
+
+  <!-- 11. Section: LangChain -->
+  <div class="slide section-slide">
+    <div class="eyebrow">Step 3 of 3</div>
+    <h2>langchain_flow.py</h2>
+    <h3>LangChain chain + LangSmith observability</h3>
+    <div class="highlight-box">
+      <p>Query MotherDuck for a pitch summary, feed it to a LangChain chain backed by our Modal LLM, and ask for an insight. Every call is traced automatically in LangSmith.</p>
+    </div>
+  </div>
+
+  <!-- 12. LangChain flow -->
+  <div class="slide code-slide">
+    <div class="eyebrow">langchain_flow.py</div>
+    <h2>Chain = Prompt | Model</h2>
+    <pre><code><span class="comment"># Custom LangChain model wrapping our Modal endpoint</span>
+<span class="keyword">class</span> <span class="func">ModalChatModel</span>(BaseChatModel):
+    endpoint_url: str
+    <span class="keyword">def</span> <span class="func">_generate</span>(self, messages, ...):
+        <span class="comment"># POST to Modal, return AIMessage</span>
+
+<span class="keyword">@task</span>
+<span class="keyword">def</span> <span class="func">run_chain</span>(context: str) -> str:
+    llm = ModalChatModel(endpoint_url=os.environ[<span class="string">"MODAL_CHAT_URL"</span>])
+    prompt = ChatPromptTemplate.from_messages([
+        (<span class="string">"system"</span>, <span class="string">"You are a data analyst."</span>),
+        (<span class="string">"human"</span>, <span class="string">"Here is yesterday's MLB pitch data:\n\n{context}\n\n"</span>
+                  <span class="string">"In 2-3 sentences, what is the most interesting insight?"</span>),
+    ])
+    chain = prompt | llm
+    result = chain.invoke({<span class="string">"context"</span>: context})
+    <span class="keyword">return</span> result.content</code></pre>
+  </div>
+
+  <!-- 13. LangSmith -->
+  <div class="slide content-slide">
+    <div class="eyebrow">Observability</div>
+    <h2>LangSmith Tracing</h2>
+    <div class="two-col" style="margin-top: 24px;">
+      <div>
+        <p>Set three env vars and every LangChain call is traced automatically — no code changes needed.</p>
+        <pre><code>LANGSMITH_API_KEY=...
+LANGSMITH_TRACING=true
+LANGSMITH_PROJECT=hackathon2026</code></pre>
+      </div>
+      <div class="card">
+        <h4>What you see in LangSmith</h4>
+        <ul>
+          <li>Full prompt sent to the model</li>
+          <li>Model response</li>
+          <li>Latency per step</li>
+          <li>Token counts</li>
+          <li>Chain structure</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14. Demo: langchain_flow -->
+  <div class="slide highlight-slide">
+    <div class="eyebrow">Live Demo</div>
+    <h2>Run the LangChain Flow</h2>
+    <pre><code>uv run python workflows/langchain_flow.py</code></pre>
+    <div class="highlight-box" style="margin-top: 24px;">
+      <p><strong>Watch for:</strong> Insight printed to terminal. Then open LangSmith — the full trace should appear within seconds: prompt, response, latency, token count.</p>
+    </div>
+  </div>
+
+  <!-- 15. Streamlit -->
+  <div class="slide content-slide">
+    <div class="eyebrow">Bonus</div>
+    <h2>Streamlit Chat UI</h2>
+    <div class="two-col" style="margin-top: 24px;">
+      <div>
+        <p>A multi-turn chat app that talks to the same Modal endpoint. Entire conversation history is sent on every turn — the LLM has context across messages.</p>
+        <pre><code>docker compose up</code></pre>
+        <p style="margin-top: 12px;">Open <span class="url">http://localhost:8502</span></p>
+      </div>
+      <div class="card">
+        <h4>Easy Extensions</h4>
+        <ul>
+          <li>Add a MotherDuck query button</li>
+          <li>Display the pitches table inline</li>
+          <li>Add a system prompt sidebar</li>
+          <li>Show LangSmith trace link per message</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16. Architecture recap -->
+  <div class="slide content-slide">
+    <div class="eyebrow">Recap</div>
+    <h2>The Full Picture</h2>
+    <div style="margin-top: 28px;">
+      <div class="step-row">
+        <span class="step-num">1</span>
+        <p><strong>MLB Stats API</strong> (free, no auth) → <strong>Prefect</strong> orchestrates fetch → <strong>MotherDuck</strong> stores <code>pitches</code> table</p>
+      </div>
+      <div class="step-row">
+        <span class="step-num">2</span>
+        <p><strong>Modal</strong> hosts the LLM on serverless GPU → OpenAI-compatible endpoint → any Python client can call it</p>
+      </div>
+      <div class="step-row">
+        <span class="step-num">3</span>
+        <p><strong>LangChain</strong> chains prompt + model → <strong>LangSmith</strong> traces every call → <strong>Streamlit</strong> puts a UI on top</p>
+      </div>
+    </div>
+    <div class="highlight-box" style="margin-top: 16px;">
+      <p>Every piece is swappable. Different data source, different model, different UI — the pattern stays the same.</p>
+    </div>
+  </div>
+
+  <!-- 17. Your turn -->
+  <div class="slide title-slide">
+    <div class="eyebrow">Hackathon</div>
+    <h1>Your Turn</h1>
+    <p class="subtitle">Pick a dataset. Pick a question. Build a pipeline.</p>
+    <div class="tag-row" style="margin-top: 32px; text-align: center;">
+      <span class="badge">New data source</span>
+      <span class="badge">Different model</span>
+      <span class="badge">Richer prompts</span>
+      <span class="badge">Better UI</span>
+      <span class="badge">Agents</span>
+    </div>
+    <p class="meta" style="margin-top: 40px;">Repo: github.com/Btibert3/questrom-msba-hackathon2026</p>
+  </div>
+
+</div><!-- /deck -->
+
+<div class="slide-counter" id="counter">1 / 17</div>
+
+<div class="nav">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="next()">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function show(n) {
+    slides[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+    document.getElementById('progress').style.width = `${((current + 1) / slides.length) * 100}%`;
+  }
+
+  function next() { show(current + 1); }
+  function prev() { show(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+  });
+
+  // init progress
+  document.getElementById('progress').style.width = `${(1 / slides.length) * 100}%`;
+</script>
+
+</body>
+</html>
