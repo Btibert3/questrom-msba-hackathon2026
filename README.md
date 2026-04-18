@@ -98,3 +98,8 @@ python workflows/langchain_flow.py   # LangChain chain + LangSmith trace
 
 - [Account & key setup](docs/setup.md)
 - [Flow walkthroughs](docs/workflows.md)
+
+
+## Colab Flow
+
+-[Google Colab Prototyping](https://colab.research.google.com/drive/1cNZA_oK1C0n55RVnj1AMDOevWXKLyn3P?usp=sharing)
